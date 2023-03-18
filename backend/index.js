@@ -10,4 +10,9 @@ const io = new Server(PORT, {
   },
 });
 
-io.on("connection", (socket) => {});
+io.on("connection", (socket) => {
+  socket.on("send-changes", (delta) => {
+    // broadcast all changes to frontend , to all users
+    socket.broadcast.emit("receive-changes", delta);
+  });
+});
