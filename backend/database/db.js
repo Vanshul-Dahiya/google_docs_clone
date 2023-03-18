@@ -1,7 +1,12 @@
 import mongoose from "mongoose";
 
-const Connection = async (password = "1A96dUJOp3ZV4zgL") => {
-  const URL = `mongodb+srv://vanshul_dahiya:${password}@cluster0.ozbxsve.mongodb.net/?retryWrites=true&w=majority`;
+require("dotenv").config();
+
+const Connection = async (
+  username = process.env.USERNAME,
+  password = process.env.PASSWORD
+) => {
+  const URL = `mongodb+srv://${username}:${password}@cluster0.ozbxsve.mongodb.net/?retryWrites=true&w=majority`;
   try {
     await mongoose.connect(URL, {
       useUnifiedTopology: true,
