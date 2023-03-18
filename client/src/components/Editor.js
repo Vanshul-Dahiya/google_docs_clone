@@ -10,6 +10,8 @@ import styled from "@emotion/styled";
 
 import { io } from "socket.io-client";
 
+import { useParams } from "react-router-dom";
+
 const Component = styled.div`
   background: #f5f5f5;
 `;
@@ -37,6 +39,7 @@ const toolbarOptions = [
 const Editor = () => {
   const [socket, setSocket] = useState();
   const [quill, setQuill] = useState();
+  const { id } = useParams();
 
   // useEffect will run only once , when component initializes
   useEffect(() => {
@@ -44,6 +47,8 @@ const Editor = () => {
       theme: "snow",
       modules: { toolbar: toolbarOptions },
     });
+    quillServer.disable();
+    quillServer.setText("Loading the document ... ");
     setQuill(quillServer);
   }, []);
 
@@ -92,6 +97,36 @@ const Editor = () => {
       socket && socket.off("receive-changes", handleChange);
     };
   }, [quill, socket]);
+
+  // document loading , quill enabling
+  useEffect(() => {
+    if (quill === null || socket === null) return;
+
+    // once document loads -
+    socket &&
+      socket.once("load-document", (document) => {
+        quill && quill.setContents(document);
+        quill && quill.enable();
+      });
+
+    // fetch document and id
+    socket && socket.emit("get-document", id);
+  }, [quill, socket, id]);
+
+  // save data (document)
+  useEffect(() => {
+    if (quill === null || socket === null) return;
+
+    // always unmount setInterval
+    const interval = setInterval(() => {
+      socket && socket.emit("save-document", quill.getContents());
+    }, 2000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [socket, quill]);
+
   return (
     <Component>
       <Box className="container" id="container"></Box>
